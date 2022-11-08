@@ -14,7 +14,8 @@ interface IProps {
  * Perspective library adds load to HTMLElement prototype.
  * This interface acts as a wrapper for Typescript compiler.
  */
-interface PerspectiveViewerElement {
+// extended PerspectiveViewerElement to behave as an HTML element
+interface PerspectiveViewerElement extends HTMLElement {
   load: (table: Table) => void,
 }
 
@@ -32,7 +33,28 @@ class Graph extends Component<IProps, {}> {
 
   componentDidMount() {
     // Get element to attach the table from the DOM.
-    const elem: PerspectiveViewerElement = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
+    // assigned const elem directly to the result because PerspectiveViewerElement was extended to HTMLElement
+
+    const elem = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
+    /* 
+    1. view help us to visualize data by defaut it is grid that is why we have to use
+       y_line because we want a continous line
+    2. column-pivots help us to identify between stock ABC and DEF,and it si the stock
+       because it is what we have.
+    3. rows-pivots mp each datapoint with its timestamp without it x-axis would be blank
+    4. colums help us focus on particular stock's data, the graph would 
+       plot different data point without this
+    5. aggreates take duplicated data and and consolidate them in a single data point.
+     */
+    elem.setAttribute('view', 'y_line');
+    elem.setAttribute('column-pivots','["stock"]');
+    elem.setAttribute('row-pivots', '["timestamp"]');
+    elem.setAttribute('columns','["top_ask_price"]');
+    elem.setAttribute('aggregates',`
+          {"stock":"distinct count",
+          "top_ask_price":"avg",
+          "top_bid_price":"avg",
+          "timestamp":"distinct count"}`)
 
     const schema = {
       stock: 'string',
